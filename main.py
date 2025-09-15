@@ -1,53 +1,39 @@
-import pyperclip, subprocess, os, keyboard, traceback , time
+import pyperclip, subprocess, os, keyboard, time
 from gtts import gTTS
 from webbrowser import open_new
 
 # ====== CONFIG ======
 VLC_EXE = r"C:\\Program Files\\VideoLAN\\VLC\\vlc.exe"
-LOG_FILE = r"C:\\mp3\\hotkey_log.txt"
 SAVE_DIR = r"C:\\mp3"
 os.makedirs(SAVE_DIR, exist_ok=True)
 # ====================
 
-def log_error(e):
-    with open(LOG_FILE, "a", encoding="utf-8") as f:
-        f.write(traceback.format_exc() + "\n")
-
 def tts_clipboard():
-    try:
-        text = pyperclip.paste().strip()
-        if not text:
-            return
+    text = pyperclip.paste().strip()
+    if not text:
+        return
 
-        mp3_file = os.path.join(SAVE_DIR, "tts_clip.mp3")
-        tts = gTTS(text=text, lang="th")
-        tts.save(mp3_file)
+    mp3_file = os.path.join(SAVE_DIR, "tts_clip.mp3")
+    tts = gTTS(text=text, lang="th")
+    tts.save(mp3_file)
 
-        subprocess.run([VLC_EXE, "--play-and-exit", mp3_file],
-                       stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL)
+    subprocess.run([VLC_EXE, "--play-and-exit", mp3_file],
+                   stdout=subprocess.DEVNULL,
+                   stderr=subprocess.DEVNULL)
 
-        if os.path.exists(mp3_file):
-            os.remove(mp3_file)
-    except Exception as e:
-        log_error(e)
+    if os.path.exists(mp3_file):
+        os.remove(mp3_file)
 
 def key(k1):
-    try:
-        if os.path.exists(k1):
-            subprocess.Popen([k1], shell=True)
-        elif "http" in k1:
-            open_new(k1)
-        else:
-            open_new(k1)  # fallback
-    except Exception as e:
-        log_error(e)
+    if os.path.exists(k1):
+        subprocess.Popen([k1], shell=True)
+    elif "http" in k1:
+        open_new(k1)
+    else:
+        open_new(k1)  # fallback
 
 def k12(hotkey, mode, command):
-    try:
-        keyboard.add_hotkey(hotkey, mode, args=(command,))
-    except Exception as e:
-        log_error(e)
+    keyboard.add_hotkey(hotkey, mode, args=(command,))
 
 # ==== HOTKEYS ====
 k12("ctrl+alt+g", key, "https://google.com")
