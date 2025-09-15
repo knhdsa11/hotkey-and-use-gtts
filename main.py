@@ -1,5 +1,5 @@
-import pyperclip ,subprocess , os , keyboard , traceback
-from gtts import gTTS 
+import pyperclip, subprocess, os, keyboard, traceback , time
+from gtts import gTTS
 from webbrowser import open_new
 
 # ====== CONFIG ======
@@ -19,7 +19,7 @@ def tts_clipboard():
         if not text:
             return
 
-        mp3_file = os.path.join(SAVE_DIR, "tts_clip.mp3")  # ใช้ join ปลอดภัย
+        mp3_file = os.path.join(SAVE_DIR, "tts_clip.mp3")
         tts = gTTS(text=text, lang="th")
         tts.save(mp3_file)
 
@@ -27,30 +27,41 @@ def tts_clipboard():
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL)
 
-        os.remove(mp3_file)
+        if os.path.exists(mp3_file):
+            os.remove(mp3_file)
     except Exception as e:
         log_error(e)
 
 def key(k1):
     try:
-        if "http" in k1:
+        if os.path.exists(k1):
+            subprocess.Popen([k1], shell=True)
+        elif "http" in k1:
             open_new(k1)
         else:
-            os.system(f'"{k1}"')
+            open_new(k1)  # fallback
     except Exception as e:
         log_error(e)
 
-# Hotkeys
-keyboard.add_hotkey("ctrl+alt+g", key, args=("https://google.com",))
-keyboard.add_hotkey("ctrl+alt+y", key, args=("https://youtube.com",))
-keyboard.add_hotkey("ctrl+alt+s", key, args=("https://music.youtube.com",))
-keyboard.add_hotkey("ctrl+alt+f", key, args=("https://web.facebook.com/TempTos1",))
-keyboard.add_hotkey("ctrl+alt+m", key, args=("https://www.messenger.com/",))
-keyboard.add_hotkey("ctrl+alt+c", key, args=("https://chatgpt.com",))
-keyboard.add_hotkey("ctrl+alt+o", key, args=(r"C:\ProgramData\Microsoft\Windows\Start Menu\Programs\OBS Studio\OBS Studio (64bit).lnk",))
-keyboard.add_hotkey("ctrl+alt+t", tts_clipboard)
+def k12(hotkey, mode, command):
+    try:
+        keyboard.add_hotkey(hotkey, mode, args=(command,))
+    except Exception as e:
+        log_error(e)
 
-try:
-    keyboard.wait()
-except Exception as e:
-    log_error(e)
+# ==== HOTKEYS ====
+k12("ctrl+alt+g", key, "https://google.com")
+k12("ctrl+alt+y", key, "https://youtube.com")
+k12("ctrl+alt+s", key, "https://music.youtube.com")
+k12("ctrl+alt+f", key, "https://web.facebook.com/TempTos1")
+k12("ctrl+alt+m", key, "https://www.messenger.com/")
+k12("ctrl+alt+c", key, "https://chatgpt.com")
+k12("ctrl+alt+4", key, "")
+k12("ctrl+alt+d", key, r"c:\Users\TEMPTOS\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Discord Inc\Discord.lnk")
+k12("ctrl+alt+l", key, r"c:\Users\TEMPTOS\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\LINE\LINE.lnk")
+k12("ctrl+alt+o", key, r"c:\Program Files\obs-studio\bin\64bit\obs64.exe")
+k12("ctrl+alt+6", key, "https://copilot.microsoft.com/")
+k12("ctrl+alt+t", lambda: tts_clipboard(), None)
+
+# ==== WAIT FOR HOTKEYS ====
+keyboard.wait()
